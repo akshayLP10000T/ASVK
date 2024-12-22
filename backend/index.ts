@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import UserRoutes from './routes/user.route';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -10,6 +11,7 @@ const app = express();
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(cookieParser());
 app.use("/users", UserRoutes);
 
 app.get("/", (_: Request, res: Response)=>{

@@ -2,6 +2,15 @@ import { Request, Response } from "express";
 import { createUser } from "../services/user.service";
 import { validationResult } from 'express-validator';
 import User from "../schema/user.model";
+import RedisClient from '../services/redis.service';
+
+declare global{
+    namespace Express{
+        interface Request{
+            user: any | null;
+        }
+    }
+}
 
 export const registerUser = async (req: Request, res: Response): Promise<any> => {
     try {
@@ -75,6 +84,18 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
             token
         });
 
+    } catch (error: any) {
+        console.log(error);
+    }
+}
+
+export const userProfile = async (req: Request, res: Response): Promise<any>=>{
+    try {
+
+        return res.status(200).json({
+            user: req.user,
+        });
+        
     } catch (error: any) {
         console.log(error);
     }
