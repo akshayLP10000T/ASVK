@@ -3,10 +3,11 @@ import { createUser } from "../services/user.service";
 import { validationResult } from 'express-validator';
 import User from "../schema/user.model";
 import RedisClient from '../services/redis.service';
+import redisClient from "../services/redis.service";
 
-declare global{
-    namespace Express{
-        interface Request{
+declare global {
+    namespace Express {
+        interface Request {
             user: any | null;
         }
     }
@@ -33,6 +34,8 @@ export const registerUser = async (req: Request, res: Response): Promise<any> =>
             const user = await createUser(req.body);
 
             const token = user.generateJWT();
+
+            res.cookie('token', token);
 
             return res.status(201).json({
                 user,
@@ -75,9 +78,11 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
             });
         }
 
-        user = await User.findOne({email});
+        user = await User.findOne({ email });
 
         const token = user?.generateJWT();
+
+        res.cookie('token', token);
 
         return res.status(200).json({
             user,
@@ -89,13 +94,28 @@ export const loginUser = async (req: Request, res: Response): Promise<any> => {
     }
 }
 
-export const userProfile = async (req: Request, res: Response): Promise<any>=>{
+export const userProfile = async (req: Request, res: Response): Promise<any> => {
     try {
 
         return res.status(200).json({
             user: req.user,
         });
-        
+
+    } catch (error: any) {
+        console.log(error);
+    }
+}
+
+export const logout = async (req: Request, res: Response): Promise<any> => {
+    try {
+
+        const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+        redisClient.set(token, 'logout', 'EX', 3 * 60 * 60 * 24);
+
+        return res.status(202).json({
+            message: "Logged out successfully",
+        });
+
     } catch (error: any) {
         console.log(error);
     }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginUser, registerUser, userProfile } from "../controllers/user.controller";
+import { loginUser, logout, registerUser, userProfile } from "../controllers/user.controller";
 import { body } from "express-validator";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 
@@ -17,5 +17,6 @@ router.post("/login",
     loginUser
 )
 router.get("/profile", isAuthenticated, userProfile);
+router.get("/logout", isAuthenticated, logout);
 
 export default router
