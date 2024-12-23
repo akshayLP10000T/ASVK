@@ -3,11 +3,16 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import UserRoutes from './routes/user.route';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
 
+app.use(cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+}));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));

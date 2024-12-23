@@ -25,6 +25,14 @@ export const registerUser = async (req: Request, res: Response): Promise<any> =>
         try {
             const userExisted = await User.findOne({ email: req.body.email });
 
+            const { password, confirmPassword } = req.body;
+
+            if(!(password.toString().trim() === confirmPassword.toString().trim())){
+                return res.status(400).json({
+                    message: "Confirm password is not same",
+                });
+            }
+
             if (userExisted) {
                 return res.status(401).json({
                     message: "E-mail already taken",
