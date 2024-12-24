@@ -5,6 +5,8 @@ import { LoginForm } from "@/types/form";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "@/config/axios";
+import { useUser } from "@/context/user.context";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const [formData, setFormData] = useState<LoginForm>({
@@ -16,20 +18,29 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+  const { setUser } = useUser();
 
   const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     axios
       .post("/users/login", formData)
-      .then((_: any) => {
+      .then((res: any) => {
+        localStorage.setItem("token", res.data.token);
+        setUser(res.data.user);
+        setLoading(false);
+
         navigate("/", {
           replace: true,
         });
       })
       .catch((err: any) => {
         console.log(err);
+        setLoading(false);
       });
   };
 
@@ -78,12 +89,22 @@ const Login = () => {
 
           {/* Submit Button */}
           <div>
-            <Button
-              type="submit"
-              className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              Login
-            </Button>
+            {loading ? (
+              <Button
+                disabled
+                type="submit"
+                className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <Loader2 className="animate-spin" /> Please Wait...
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                Login
+              </Button>
+            )}
           </div>
         </form>
         <div className="w-full h-fit text-end mt-1">

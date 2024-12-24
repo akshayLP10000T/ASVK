@@ -1,7 +1,14 @@
-const Home = () => {
-  return (
-    <div>Home</div>
-  )
-}
+import { useUser } from "@/context/user.context";
 
-export default Home
+const Home = () => {
+  const { user } = useUser();
+
+  return (
+    <div>
+      {JSON.stringify(user)}
+      <p>{user?.username}</p>
+    </div>
+  );
+};
+
+export default Home;
