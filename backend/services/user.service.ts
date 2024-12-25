@@ -1,16 +1,17 @@
+import mongoose from "mongoose";
 import User from "../schema/user.model";
 import { UserTypeDocument } from "../types/user";
 
-interface CreateUserData{
+interface CreateUserData {
     email: string;
     password: string;
     username: string;
 }
 
-export const createUser = async (data: CreateUserData): Promise<UserTypeDocument>=>{
+export const createUser = async (data: CreateUserData): Promise<UserTypeDocument> => {
     const { email, password, username } = data;
 
-    if(!email || !password || !username){
+    if (!email || !password || !username) {
         throw new Error("All details are necessary for creating a user");
     }
 
@@ -25,4 +26,11 @@ export const createUser = async (data: CreateUserData): Promise<UserTypeDocument
     const userWithoutPassword = await User.findById(user._id);
 
     return userWithoutPassword!;
+}
+
+export const getAllUsersService = async (userId: mongoose.Schema.Types.ObjectId): Promise<UserTypeDocument[]> => {
+    const users = await User.find({
+        _id: { $ne: userId },
+    });
+    return users;
 }

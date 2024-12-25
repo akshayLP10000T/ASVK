@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { createUser } from "../services/user.service";
+import { createUser, getAllUsersService } from "../services/user.service";
 import { validationResult } from 'express-validator';
 import User from "../schema/user.model";
-import RedisClient from '../services/redis.service';
 import redisClient from "../services/redis.service";
+import mongoose from "mongoose";
 
 declare global {
     namespace Express {
@@ -27,7 +27,7 @@ export const registerUser = async (req: Request, res: Response): Promise<any> =>
 
             const { password, confirmPassword } = req.body;
 
-            if(!(password.toString().trim() === confirmPassword.toString().trim())){
+            if (!(password.toString().trim() === confirmPassword.toString().trim())) {
                 return res.status(400).json({
                     message: "Confirm password is not same",
                 });
@@ -126,5 +126,24 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
 
     } catch (error: any) {
         console.log(error);
+    }
+}
+
+export const getAllUsers = async (req: Request, res: Response): Promise<any> => {
+    try {
+
+        const loggedInUser = await User.findOne({ email: req.user.email });
+
+        const allUsers = await getAllUsersService(loggedInUser?._id as mongoose.Schema.Types.ObjectId);
+
+        return res.status(200).json({
+            users: allUsers,
+        });
+
+    } catch (error: any) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+        });
     }
 }

@@ -1,5 +1,7 @@
 import { ModeToggle } from "@/components/toggleMode";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -20,16 +22,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import axios from "@/config/axios";
 import { useUser } from "@/context/user.context";
+import { ProjectType } from "@/types/project";
+import { User } from "@/types/user";
 import { Loader2, User2Icon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [name, setName] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const { user } = useUser();
+  const [projects, setProjects] = useState<ProjectType[]>([]);
+  const navigate = useNavigate();
 
   const createProjectHandler = () => {
     setLoading(true);
@@ -48,6 +61,34 @@ const Home = () => {
       });
   };
 
+  const logoutHandler = async () => {
+    axios
+      .get("/users/logout")
+      .then((_: any) => {
+        localStorage.removeItem("token");
+        navigate("/login", {
+          replace: true,
+        });
+      })
+      .catch((err: any) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    const getAllProjects = async () => {
+      await axios
+        .get("/projects/all")
+        .then((res: any) => {
+          setProjects(res.data.projects);
+        })
+        .catch((err: any) => {
+          console.log(err.response);
+        });
+    };
+    getAllProjects();
+  }, []);
+
   return (
     <div className="p-6 w-full h-screen">
       <div className="flex justify-between items-center w-full">
@@ -57,7 +98,7 @@ const Home = () => {
         </div>
         <div className="items-center flex gap-5">
           <DropdownMenu>
-            <DropdownMenuTrigger className="border-[1px] px-3 py-2 shadow-sm rounded-md text-sm font-semibold dark:hover:bg-gray-800 hover:bg-gray-100 duration-100 transition-colors">
+            <DropdownMenuTrigger className="border-[1px] px-3 py-2 shadow-sm rounded-md text-sm font-semibold dark:hover:bg-zinc-800 hover:bg-zinc-100 duration-100 transition-colors">
               Project Requests
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -120,10 +161,57 @@ const Home = () => {
             </DialogContent>
           </Dialog>
           <ModeToggle />
+          <Button onClick={logoutHandler}>Logout</Button>
         </div>
       </div>
       <Separator className="my-3" />
-      <div></div>
+      <div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 p-4">
+          {projects.map((project) => (
+            <Card
+              onClick={() => navigate(`/project/${project._id}`)}
+              key={project._id}
+              className="bg-white dark:bg-zinc-800 shadow-md hover:shadow-2xl duration-200 transition-all rounded-lg cursor-pointer hover:scale-105"
+            >
+              <CardHeader className="border-b p-4">
+                <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">
+                  {project.name}
+                </h3>
+              </CardHeader>
+              <CardContent className="p-4">
+                <h4 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">
+                  Collaborators:
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {project.users.map((user: User) => (
+                    <TooltipProvider key={user._id}>
+                      <Tooltip key={user._id}>
+                        <TooltipTrigger>
+                          <Avatar className="w-10 h-10 border border-zinc-300 dark:border-zinc-700">
+                            <AvatarImage
+                              src={`https://api.dicebear.com/5.x/bottts/svg?seed=${user.username}`}
+                              alt={user.username}
+                            />
+                            <AvatarFallback>
+                              {user.username.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </TooltipTrigger>
+                        <TooltipContent className="text-sm bg-white dark:bg-zinc-700 text-zinc-800 dark:text-zinc-100">
+                          {user.username} <br />
+                          <span className="text-xs text-zinc-500">
+                            {user.email}
+                          </span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
