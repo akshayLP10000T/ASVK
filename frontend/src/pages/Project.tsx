@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Message from "@/components/Message";
-import { UserPlus2Icon } from "lucide-react";
+import AddUserDialog from "@/components/AddUserDialog";
 
 const Project = () => {
   const { projectId } = useParams();
@@ -19,11 +19,31 @@ const Project = () => {
   const [message, setMessage] = useState<string>("");
   const [messages, setMessages] = useState([
     { id: 1, message: "Hi there! How can I assist you?", sender: "bot" },
-    { id: 2, message: "I want to know more about your services.", sender: "user" },
-    { id: 3, message: "I want to know more about your services.", sender: "user" },
-    { id: 4, message: "I want to know more about your services.", sender: "user" },
-    { id: 5, message: "I want to know more about your services.", sender: "user" },
-    { id: 6, message: "I want to know more about your services.", sender: "user" },
+    {
+      id: 2,
+      message: "I want to know more about your services.",
+      sender: "user",
+    },
+    {
+      id: 3,
+      message: "I want to know more about your services.",
+      sender: "user",
+    },
+    {
+      id: 4,
+      message: "I want to know more about your services.",
+      sender: "user",
+    },
+    {
+      id: 5,
+      message: "I want to know more about your services.",
+      sender: "user",
+    },
+    {
+      id: 6,
+      message: "I want to know more about your services.",
+      sender: "user",
+    },
     { id: 7, message: "Hi there! How can I assist you?", sender: "bot" },
     { id: 8, message: "Hi there! How can I assist you?", sender: "bot" },
     { id: 9, message: "Hi there! How can I assist you?", sender: "bot" },
@@ -33,6 +53,7 @@ const Project = () => {
     { id: 13, message: "Hi there! How can I assist you?", sender: "bot" },
   ]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [addUserDialog, setAddUserDialog] = useState<boolean>(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -52,41 +73,42 @@ const Project = () => {
     };
 
     getProjectData();
-  }, []);
+  }, [setProject]);
 
   return (
     <div className="overflow-hidden w-full h-screen">
-      <DraggableBox users={collaborators} />
-      <div className="absolute right-3 top-3">
+      <DraggableBox key={project?._id} users={collaborators} />
+      <div className="absolute right-3 top-3">  
         <ModeToggle />
       </div>
       <div className="flex w-full h-full">
         <div className="min-w-96 flex flex-col px-3 py-2">
           <div className="w-full h-fit py-3 px-5 flex items-center gap-3 justify-between">
-          <div>
-
-            <Avatar className="w-12 h-12 border border-zinc-300 dark:border-zinc-700">
-              <AvatarImage
-                src={`https://api.dicebear.com/5.x/bottts/svg?seed=${project?.name}`}
-                alt={project?.name}
+            <div>
+              <Avatar className="w-12 h-12 border border-zinc-300 dark:border-zinc-700">
+                <AvatarImage
+                  src={`https://api.dicebear.com/5.x/bottts/svg?seed=${project?.name}`}
+                  alt={project?.name}
                 />
-              <AvatarFallback>
-                {project?.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <h2 className="font-extrabold text-xl">{project?.name}</h2>
-                </div>
-                <div className="cursor-pointer">
-                  <UserPlus2Icon size={29} />
-                </div>
+                <AvatarFallback>
+                  {project?.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <h2 className="font-extrabold text-xl">{project?.name}</h2>
+            </div>
+            <AddUserDialog
+              collaborators={project?.users!}
+              setProject={setProject}
+              projectId={project?._id!}
+              open={addUserDialog}
+              setOpen={setAddUserDialog}
+            />
           </div>
           <Separator />
           <div className="flex-1 py-3 glex-col flex-grow space-y-2 overflow-y-auto">
-            {
-              messages.map((msg)=>(
-                <Message key={msg.id} message={msg.message} sender={msg.sender} />
-              ))
-            }
+            {messages.map((msg) => (
+              <Message key={msg.id} message={msg.message} sender={msg.sender} />
+            ))}
             <div ref={messagesEndRef}></div>
           </div>
           <form className="flex gap-2">
