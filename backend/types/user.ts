@@ -1,6 +1,6 @@
 import mongoose, { Model } from "mongoose";
 
-interface UserType {
+export interface UserType {
     username: string;
     email: string;
     password: string;

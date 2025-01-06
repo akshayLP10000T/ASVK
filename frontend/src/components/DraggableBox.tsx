@@ -7,7 +7,7 @@ interface DraggableBoxProps {
 }
 
 const DraggableBox: React.FC<DraggableBoxProps> = ({ users }) => {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
 
   const handleDrag = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const box = e.currentTarget;

@@ -11,49 +11,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Message from "@/components/Message";
 import AddUserDialog from "@/components/AddUserDialog";
+import { initializeSocket, receiveMessage, sendMessage } from "@/config/socket";
+import { useUser } from "@/context/user.context";
 
 const Project = () => {
   const { projectId } = useParams();
   const [project, setProject] = useState<ProjectType | null>();
   const [collaborators, setCollaborators] = useState<User[] | []>([]);
   const [message, setMessage] = useState<string>("");
-  const [messages, setMessages] = useState([
-    { id: 1, message: "Hi there! How can I assist you?", sender: "bot" },
-    {
-      id: 2,
-      message: "I want to know more about your services.",
-      sender: "user",
-    },
-    {
-      id: 3,
-      message: "I want to know more about your services.",
-      sender: "user",
-    },
-    {
-      id: 4,
-      message: "I want to know more about your services.",
-      sender: "user",
-    },
-    {
-      id: 5,
-      message: "I want to know more about your services.",
-      sender: "user",
-    },
-    {
-      id: 6,
-      message: "I want to know more about your services.",
-      sender: "user",
-    },
-    { id: 7, message: "Hi there! How can I assist you?", sender: "bot" },
-    { id: 8, message: "Hi there! How can I assist you?", sender: "bot" },
-    { id: 9, message: "Hi there! How can I assist you?", sender: "bot" },
-    { id: 10, message: "Hi there! How can I assist you?", sender: "bot" },
-    { id: 11, message: "Hi there! How can I assist you?", sender: "bot" },
-    { id: 12, message: "Hi there! How can I assist you?", sender: "bot" },
-    { id: 13, message: "Hi there! How can I assist you?", sender: "bot" },
-  ]);
+  const [messages, setMessages] = useState<any>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [addUserDialog, setAddUserDialog] = useState<boolean>(false);
+  const { user } = useUser();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -73,12 +42,29 @@ const Project = () => {
     };
 
     getProjectData();
-  }, [setProject]);
+  }, [setProject, projectId]);
+
+  useEffect(() => {
+    initializeSocket(projectId!);
+
+    receiveMessage("project-message", (data: any) => {
+      console.log(data);
+    });
+  }, []);
+
+  const sendMessageHandler = () => {
+    sendMessage("project-message", {
+      message,
+      sender: user?._id,
+      username: user?.username,
+    });
+    setMessage("");
+  };
 
   return (
     <div className="overflow-hidden w-full h-screen">
       <DraggableBox key={project?._id} users={collaborators} />
-      <div className="absolute right-3 top-3">  
+      <div className="absolute right-3 top-3">
         <ModeToggle />
       </div>
       <div className="flex w-full h-full">
@@ -106,8 +92,8 @@ const Project = () => {
           </div>
           <Separator />
           <div className="flex-1 py-3 glex-col flex-grow space-y-2 overflow-y-auto">
-            {messages.map((msg) => (
-              <Message key={msg.id} message={msg.message} sender={msg.sender} />
+            {messages.map((msg: any, key: number) => (
+              <Message key={key} message={msg?.message} username={msg?.username} sender={msg?.sender} />
             ))}
             <div ref={messagesEndRef}></div>
           </div>
@@ -119,7 +105,11 @@ const Project = () => {
               onChange={(e) => setMessage(e.target.value)}
               type="message"
             />
-            {message.trim() !== "" && <Button type="submit">Send</Button>}
+            {message.trim() !== "" && (
+              <Button onClick={sendMessageHandler} type="submit">
+                Send
+              </Button>
+            )}
           </form>
         </div>
         <div className="flex-1 bg-blue-700"></div>
