@@ -31,7 +31,7 @@ io.use(async (socket, next) => {
         const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
         const projectId = socket.handshake.query.projectId;
 
-        if(!mongoose.Types.ObjectId.isValid(projectId as string)){
+        if (!mongoose.Types.ObjectId.isValid(projectId as string)) {
             return next(new Error('Invalid Project ID'));
         }
 
@@ -61,7 +61,11 @@ io.on('connection', (socket) => {
     socket.join(socket.roomId!);
 
     socket.on('project-message', (data) => {
-        io.to(socket.roomId!).emit('project-message', data);
+        socket.broadcast.to(socket.roomId!).emit('project-message', data);
+    });
+
+    socket.on("disconnect", () => {
+        socket.leave(socket.roomId!);
     });
 });
 

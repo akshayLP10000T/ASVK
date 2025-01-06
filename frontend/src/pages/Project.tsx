@@ -14,12 +14,18 @@ import AddUserDialog from "@/components/AddUserDialog";
 import { initializeSocket, receiveMessage, sendMessage } from "@/config/socket";
 import { useUser } from "@/context/user.context";
 
+interface Message{
+  sender?: string;
+  username?: string;
+  message?: string;
+}
+
 const Project = () => {
   const { projectId } = useParams();
   const [project, setProject] = useState<ProjectType | null>();
   const [collaborators, setCollaborators] = useState<User[] | []>([]);
   const [message, setMessage] = useState<string>("");
-  const [messages, setMessages] = useState<any>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [addUserDialog, setAddUserDialog] = useState<boolean>(false);
   const { user } = useUser();
@@ -48,7 +54,7 @@ const Project = () => {
     initializeSocket(projectId!);
 
     receiveMessage("project-message", (data: any) => {
-      console.log(data);
+      setMessages((prev) => [...prev, data]);
     });
   }, []);
 
@@ -58,6 +64,14 @@ const Project = () => {
       sender: user?._id,
       username: user?.username,
     });
+    setMessages((prev) => [
+      ...prev,
+      {
+        message,
+        sender: user?._id,
+        username: user?.username,
+      },
+    ]);
     setMessage("");
   };
 
