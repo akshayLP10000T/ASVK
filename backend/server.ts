@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import Project from './schema/project.model';
+import { generateResult } from './services/gemini.service';
 
 declare module "socket.io" {
     interface Socket {
@@ -60,8 +61,24 @@ io.on('connection', (socket) => {
     socket.roomId = socket.project?._id.toString();
     socket.join(socket.roomId!);
 
-    socket.on('project-message', (data) => {
+    socket.on('project-message', async (data) => {
         socket.broadcast.to(socket.roomId!).emit('project-message', data);
+
+        const { message }: { message: string } = data;
+        const firstWord = message.toLowerCase().split(' ')[0];
+        const forAI = firstWord === '@ai' || firstWord === '@asvk';
+        if(forAI){
+            const messageForAI = message.replace(firstWord, '').trim();
+            const result = await generateResult(messageForAI);
+
+            io.to(socket.roomId!).emit('project-message', {
+                message: result,
+                sender: 'AI',
+                username: 'ASVK',
+            });
+            return;
+        }
+
     });
 
     socket.on("disconnect", () => {

@@ -14,7 +14,7 @@ const Message: React.FC<MessageProps> = ({ message, sender, username }) => {
 "user";
   return (
     <div
-      className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4 gap-2`}
+      className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4 gap-2 max-w-full overflow-x-auto`}
     >
       {!isUser && (
         <Avatar className="w-7 h-7 border border-zinc-300 dark:border-zinc-700">
@@ -32,7 +32,7 @@ const Message: React.FC<MessageProps> = ({ message, sender, username }) => {
         } shadow-md`}
       >
         <p className={`opacity-75 font-light text-sm w-full ${isUser && "text-end"} mb-2`}>{username}</p>
-        <p>{message}</p>
+        <div>{message}</div>
       </div>
       {isUser && (
         <Avatar className="w-7 h-7 border border-zinc-300 dark:border-zinc-700">
